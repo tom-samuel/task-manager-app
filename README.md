@@ -8,7 +8,7 @@ A professional, enterprise-grade task management application built with modern w
 
 ## ✨ Live Demo
 
-**[🌐 View Live Application](https://tom-samuel.github.io/task-manager-app/)**
+**[🌐 View Live Application](https://task-manager-app-seven-chi.vercel.app/)**
 
 ## 🎯 Features
 
