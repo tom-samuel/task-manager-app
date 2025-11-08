@@ -158,7 +158,6 @@
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
                             <option value="priority">Priority</option>
-                            <option value="dueDate">Due Date</option>
                         </select>
                     </div>
                 </div>
@@ -185,6 +184,24 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Projects View -->
+            <div class="view" id="projectsView">
+                <div class="coming-soon">
+                    <i class="fas fa-rocket"></i>
+                    <h2>Projects Coming Soon</h2>
+                    <p>Organize your tasks by projects and teams</p>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="view" id="calendarView">
+                <div class="coming-soon">
+                    <i class="fas fa-calendar-plus"></i>
+                    <h2>Calendar Coming Soon</h2>
+                    <p>Visualize your tasks and deadlines on a calendar</p>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -198,13 +215,191 @@
             <div class="modal-body">
                 <input type="text" id="quickTaskInput" placeholder="Enter task description...">
                 <div class="modal-actions">
-                    <button class="btn-secondary">Cancel</button>
-                    <button class="btn-primary">Add Task</button>
+                    <button class="btn-secondary" id="cancelQuickAdd">Cancel</button>
+                    <button class="btn-primary" id="confirmQuickAdd">Add Task</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- JavaScript Files -->
+    <script src="app-core.js"></script>
+    <script src="app-views.js"></script>
+    <script>
+        // Initialize the application
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new FlowTaskPro();
+            window.app = app;
+            console.log('🚀 FlowTask Pro initialized - Enterprise Task Management');
+            
+            // Add CSS for notifications and animations
+            const styles = document.createElement('style');
+            styles.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+                
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .priority-dot {
+                    font-size: 12px;
+                    margin-left: auto;
+                }
+                
+                .coming-soon {
+                    text-align: center;
+                    padding: 80px 20px;
+                    color: var(--text-muted);
+                }
+                
+                .coming-soon i {
+                    font-size: 4rem;
+                    margin-bottom: 20px;
+                    opacity: 0.5;
+                }
+                
+                .coming-soon h2 {
+                    margin-bottom: 12px;
+                    font-weight: 600;
+                }
+                
+                .empty-state {
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: var(--text-muted);
+                }
+                
+                .empty-state i {
+                    font-size: 3rem;
+                    margin-bottom: 16px;
+                    opacity: 0.5;
+                }
+                
+                .empty-state h3 {
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                }
+                
+                .modal {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(4px);
+                    z-index: 1000;
+                    align-items: center;
+                    justify-content: center;
+                    animation: fadeIn 0.3s ease;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                .modal.active {
+                    display: flex;
+                }
+                
+                .modal-content {
+                    background: var(--bg-card);
+                    border-radius: 16px;
+                    width: 90%;
+                    max-width: 400px;
+                    box-shadow: var(--shadow-lg);
+                    animation: modalSlideIn 0.3s ease;
+                }
+                
+                @keyframes modalSlideIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.9) translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                }
+                
+                .modal-header {
+                    padding: 20px 24px;
+                    border-bottom: 1px solid var(--border-color);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .close-modal {
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: var(--text-muted);
+                    transition: all 0.3s ease;
+                }
+                
+                .close-modal:hover {
+                    color: var(--danger);
+                    transform: scale(1.1);
+                }
+                
+                .modal-body {
+                    padding: 24px;
+                }
+                
+                .modal-body input {
+                    width: 100%;
+                    padding: 12px 16px;
+                    border: 1px solid var(--border-color);
+                    background: var(--bg-primary);
+                    color: var(--text-primary);
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    font-size: 16px;
+                }
+                
+                .modal-actions {
+                    display: flex;
+                    gap: 12px;
+                    justify-content: flex-end;
+                }
+                
+                .btn-secondary {
+                    padding: 10px 20px;
+                    border: 1px solid var(--border-color);
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                
+                .btn-secondary:hover {
+                    border-color: var(--primary);
+                    color: var(--primary);
+                }
+            `;
+            document.head.appendChild(styles);
+        });
+    </script>
 </body>
 </html>
